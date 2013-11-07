@@ -32,6 +32,7 @@ Calculate [here](http://www.rjdown.co.uk/projects/bfbc2/fovcalculator.php)
 More ideas:
 
 |Symbol|Meaning                           |Placement|
+|:--   |:--                               |:--      |
 |*     |pointer                           |before   |
 |@     |method                            |before   |
 |#     |captions                          |         |
