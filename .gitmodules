@@ -1,3 +1,6 @@
 [submodule "tools/overlay/mumble_link"]
 	path = tools/overlay/mumble_link
 	url = https://github.com/dD0T/mumble_link.git
+[submodule "cfg/chris"]
+	path = cfg/chris
+	url = https://github.com/tf2configs/tf2configs.git
