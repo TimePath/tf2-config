@@ -17,7 +17,25 @@ from math import pi
 import mumble_link as l
 import math
 
+from collections import deque
+
+class CircularBuffer(deque):
+	
+	def __init__(self, size=0):
+		super(CircularBuffer, self).__init__(maxlen=size)
+		self.top = 0
+	
+	def append(self, what):
+		super(CircularBuffer, self).append(what)
+		self.top = max(list(self))
+	
+	def average(self):
+		if len(self) == 0: return 0
+		return sum(self) / len(self)
+
 METERS_PER_INCH=float(0.0254)
+
+cb = CircularBuffer(size=5)
 
 def unpack(p):
 	return (p[0], p[2], p[1])
@@ -28,11 +46,35 @@ def length(p):
 def sub(p1, p2):
 	return (p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2])
 
+rate_render = 25
+rate_update = 10
+
+def rad(angle):
+	return pi/180*angle
+
+locations = [(-6017.606445, 4338.713867, 120.432190), (-6023.517578,1358.113770,-48.077370)] # cp_gorge points A and B
+
 def arc(cr, xy, radius, radred, start, length):
 	cr.arc(xy[0]/2, xy[1]/2, radius-radred, start, start+length)
+	
+def point(cr, xy, radius, radred, start, length):
+	arc(cr, xy, radius, radred, start - length/2, length)
+	
+def magnitude(v):
+	return math.sqrt(sum(v[i]*v[i] for i in range(len(v))))
 
-rate_render = 25
-rate_update = 1
+def add(u, v):
+	return tuple([ u[i]+v[i] for i in range(len(u)) ])
+
+def sub(u, v):
+	return tuple([ u[i]-v[i] for i in range(len(u)) ])
+
+def dot(u, v):
+	return sum(u[i]*v[i] for i in range(len(u)))
+
+def normalize(v):
+	vmag = magnitude(v)
+	return tuple([ v[i]/vmag  for i in range(len(v)) ])
 
 class MainWindow(gtk.Window):
 	
@@ -89,32 +131,73 @@ class MainWindow(gtk.Window):
 			self.lasttick = thistick
 			return True
 		if self.lasttick != thistick:
-			tickdiff = (thistick - self.lasttick)
-			timediff = (now - self.then)
+			tickdiff = (thistick - self.lasttick) # frames
+			timediff = (now - self.then) # seconds
 			
-			fps = tickdiff / timediff
+			fps = tickdiff / timediff / 2 # positional audio is updated twice a frame, apparently
 			
 			vel = sub(self.lastpos, nowpos)
-			
-			speed = length((vel[0], vel[1], 0)) / timediff
+			speed = length((vel[0], vel[1], 0)) * (fps / tickdiff * 2)
+			cb.append(speed)
 			
 			self.lasttick = thistick
 			self.then = now
 			self.lastpos = nowpos
 			
-			self.label.set_text("\n" * 7 + "%.2f\n%s" % (speed, time.strftime('%H:%M:%S')))
+			self.label.set_text("\n" * 8 + "%.2f\n%.2f\n%s" % (cb.average(), fps, time.strftime('%H:%M:%S')))
 		return True
 	
 	def expose(self, widget, event):
 		cr = widget.window.cairo_create()
-
+		
 		cr.set_operator(cairo.OPERATOR_CLEAR)
 		cr.rectangle(0.0, 0.0, *widget.get_size())
 		cr.fill()
 		
 		cr.set_operator(cairo.OPERATOR_OVER)
-		cr.set_source_rgba(0.9, 0.9, 0.9, 0.75)
 		
+		try:
+			self.lastpos
+			"""
+			Coordinate system:
+			angle(0,0,0) = vec(1,0,0)
+			positive yaw is anticlockwise
+			positive pitch is down (negative)
+			
+			0 yaw: +x
+			+ yaw = counter clockwise
+			0 pitch = level
+			+ pitch = down
+			 +y
+			 |_+x
+			/
+			+z (up in the air)
+			
+			"""
+			front = l.get_camera_front()
+			top = l.get_camera_top()
+			
+			pitch = -math.atan2(front[1], magnitude([front[0], front[2]])) / pi * 180
+			
+			yaw = -math.atan2(front[0], front[2]) / pi * 180 + 90
+			#print("%.2f %.2f" % (pitch, yaw))
+			invm = (1 / METERS_PER_INCH)
+			pp = (self.lastpos[0] * invm, self.lastpos[1] * invm, self.lastpos[2] * invm)
+			cr.set_source_rgba(0.4, 0.9, 0.4, 0.75)
+			cr.set_source_rgba(0.4, 0.4, 0.9, 1)
+			cr.set_line_width(10)
+			for mark in locations:
+				d = (mark[0] - pp[0], mark[1] - pp[1], mark[2] - pp[2])
+				len = length(d)
+				if len == 0:
+					continue
+				s = (100000/len) * 20 # 1000 appears full size
+				s = min(max(s, 20), 90) # minimum 20, maximum 90
+				point(cr, widget.get_size(), 30, 1, math.atan2(-d[1], d[0]) - pi/2 + rad(yaw), rad(s)); cr.stroke()
+		except AttributeError: pass
+		
+		cr.set_source_rgba(0.9, 0.9, 0.9, 0.75)
+		cr.set_line_width(3)
 		t = (time.time() - self.start) % (10*2*pi)
 		m = 3
 		for i in range(m):
