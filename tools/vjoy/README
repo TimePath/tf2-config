@@ -1,0 +1,37 @@
+USAGE:
+
+Run "sudo vjoy.py --sensitivity [your TF2 sensitivity]".
+
+To use this script, you need to install evdev (http://gvalkov.github.com/python-evdev/):
+	pip install evdev
+Evdev requires python-dev
+
+Usage: sudo vjoy.py [-h] [-d DEVICE] --sensitivity SENSITIVITY
+                            [--adjustment ADJUSTMENT] [--fps FPS]
+                            [--joy_yawsensitivity JOY_YAWSENSITIVITY]
+                            [--cl_yawspeed CL_YAWSPEED] [--m_yaw M_YAW]
+
+Maps keyboard inputs to joystick inputs.
+
+Required arguments:
+  --sensitivity SENSITIVITY, -s SENSITIVITY
+                        sensitivity from TF2.
+
+Optional arguments:
+  -h, --help            show this help message and exit
+  -k DEVICE, --keyboard DEVICE
+                        Keyboard device. By default, the script attempts to
+                        find the keyboard in /dev/input/event*.
+  -m DEVICE, --mouse DEVICE
+                        Mouse device. By default, the script attempts to find
+                        the mouse in /dev/input/event*.
+  --adjustment ADJUSTMENT, -a ADJUSTMENT
+                        Sensitivity adjustment factor.
+  --fps FPS             Framerate of script (how often it updates the
+                        joystick).
+  --joy_yawsensitivity JOY_YAWSENSITIVITY
+                        joy_yawsensitivity from TF2.
+  --cl_yawspeed CL_YAWSPEED
+                        cl_yawspeed from TF2.
+  --m_yaw M_YAW         m_yaw from TF2.
+
