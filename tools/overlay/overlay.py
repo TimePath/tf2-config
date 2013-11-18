@@ -47,7 +47,7 @@ print("Running on PyQt version " + PyQt4.pyqtconfig.Configuration().pyqt_version
 # QWidget or QGLWidget
 backend = QGLWidget
 #renderhints = QPainter.Antialiasing | QPainter.SmoothPixmapTransform | QPainter.HighQualityAntialiasing
-geometry = (0, 43, 1920, 1037) # comment for fullscreen
+geometry = (0, 44, 1920, 1037) # comment for fullscreen
 rate_render = 30
 rate_update = 100
 velocity_samples = 5
