@@ -36,6 +36,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtOpenGL import *
+from point import Vector3D as V
 
 try: import mumble_link as l # python2 only
 except ImportError: pass
@@ -51,7 +52,26 @@ rate_render = 30
 rate_update = 100
 velocity_samples = 5
 
-locations = [(-6017.606445, 4338.713867, 120.432190), (-6023.517578, 1358.113770, -48.077370)] # cp_gorge points A and B
+currentmap = "cp_gorge"
+
+# color, min length (arc), max length (arc), distance
+style_objective = ((0.4, 0.4, 0.9, 1), 10, 90, 2000)
+style_health = ((0.4, 0.9, 0.9, 1), .1, 60, 750)
+
+locations = {
+	"cp_gorge":	{
+		style_objective: [
+			((-6017.606445, 4338.713867, 120.432190), "A"),
+			((-6023.517578, 1358.113770, -48.077370), "B"),
+			],
+		style_health: [
+			((-6001.607910, 4442.310547, -87.896652), "H"),
+			((-5985.979492, 5071.383301, -30.968689), "H"),
+			((-4599.325684, 3295.571777, 102.758224), "H"),
+			((-6047.500000, 3562.177246, 97.031311), "H"),
+			],
+		}
+}
 
 METERS_PER_INCH=float(0.0254)
 
@@ -69,7 +89,7 @@ class CircularBuffer(deque):
 		return sum(self) / len(self)
 
 def unpack(p):
-	return (p[0], p[2], p[1])
+	return V(p[0], p[2], p[1])
 
 def arc(qp, xy, radius, radred, start, length, method=None):
 	if method == None:
@@ -79,23 +99,6 @@ def arc(qp, xy, radius, radred, start, length, method=None):
 
 def point(qp, xy, radius, radred, start, length):
 	arc(qp, xy, radius, radred, start - length/2, length)
-
-
-def add(u, v):
-	return tuple([u[i]+v[i] for i in range(len(u))])
-
-def sub(u, v):
-	return tuple([u[i]-v[i] for i in range(len(u))])
-
-def magnitude(v):
-	return math.sqrt(sum(v[i]*v[i] for i in range(len(v))))
-
-def normalize(v):
-	vmag = magnitude(v)
-	return tuple([v[i]/vmag for i in range(len(v))])
-
-def length(p):
-	return magnitude(p) * (1 / METERS_PER_INCH)
 
 class OSD(backend):
 	def __init__(self, parent=None):
@@ -132,32 +135,42 @@ class OSD(backend):
 			qp.drawText(100, 100, "vel: %.2f" % cb.average())
 			qp.drawText(100, 200, "fps: %.2f" % self.fps)
 			qp.drawText(100, 300, time.strftime("%H:%M:%S"))
+			qp.drawText(1800, 40, "%.2f %.2f %.2f" % (self.pitch, self.yaw, self.roll))
 		except AttributeError: pass
 		except NameError: pass
 	
 		try:
-			front = l.get_camera_front()
-			top = l.get_camera_top()
+			front = V(*l.get_camera_front())
+			top = V(*l.get_camera_top())
 			
-			pitch = -math.atan2(front[1], magnitude([front[0], front[2]])) / pi * 180
+			self.pitch = -math.atan2(front[1], V(front[0], front[2]).magnitude()) / pi * 180
 			
-			yaw = math.atan2(front[0], front[2]) / pi * 180 + 180
-			if yaw < 90: yaw = -90 - yaw
-			else: yaw = 270 - yaw
-			#print('%.2f %.2f' % (pitch, yaw))
-			invm = (1 / METERS_PER_INCH)
-			pp = (self.lastpos[0] * invm, self.lastpos[1] * invm, self.lastpos[2] * invm)
+			self.yaw = math.atan2(front[0], front[2]) / pi * 180 + 180
+			if self.yaw < 90: self.yaw = -90 - self.yaw
+			else: self.yaw = 270 - self.yaw
 			
-			qp.setPen(QPen(QColor.fromRgbF(0.4, 0.4, 0.9, 1), 10))
+			self.roll = 0
+			# setang_exact 90 -90 0 == setang_exact 90 -45 45
+			#left = front.rotate(top, pi/2) * -1
+			#print(str(front) + " " + str(front.magnitude()))
+			#print(str(top) + " " + str(top.magnitude()))
+			#print(str(left) + " " + str(left.magnitude()))
+			#self.roll = math.atan2(left[1], V(left[0], left[2]).magnitude()) / pi * 180
 			
-			for mark in locations:
-				d = (mark[0] - pp[0], mark[1] - pp[1], mark[2] - pp[2])
-				len = length(d)
-				if len == 0:
-					continue
-				s = (100000/len) * 20 # 1000 appears full size
-				s = min(max(s, 20), 90) # minimum 20, maximum 90
-				point(qp, self.size(), 30, 1, math.atan2(-d[1], d[0])/pi*180 + yaw - 90, s);
+			pp = self.lastpos / METERS_PER_INCH
+			
+			for style in locations[currentmap]:
+				qp.setPen(QPen(QColor.fromRgbF(*style[0]), 10))
+				for entry in locations[currentmap][style]:
+					location = V(*entry[0])
+					d = location - pp
+					len = d.magnitude()
+					if len == 0:
+						continue
+					# 1 = min, 2 = max, 3 = distance
+					#s = min(max((style[3]/len), 1) * style[1], style[2]) # hyperbolic
+					s = max((style[3] - min(style[3], len)) / style[3] * style[2], style[1]) # linear
+					point(qp, self.size(), 30, 1, math.atan2(-d[1], d[0])/pi*180 + self.yaw - 90, s);
 		except AttributeError: pass
 		
 		qp.setPen(QPen(QColor.fromRgbF(.9, .9, .9, .75), 3))
@@ -197,8 +210,8 @@ class OSD(backend):
 			
 			self.fps = tickdiff / timediff / 2 # positional audio is updated twice a frame, apparently
 			
-			vel = sub(self.lastpos, nowpos)
-			speed = length((vel[0], vel[1], 0)) * (self.fps / tickdiff * 2)
+			vel = self.lastpos - nowpos
+			speed = V(vel.x, vel.y, 0).magnitude() * (self.fps / tickdiff * 2)
 			cb.append(speed)
 			
 			self.lasttick = thistick

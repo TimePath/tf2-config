@@ -1,3 +1,5 @@
 sound.cache
 .directory
-.pyc
+*.pyc
+__pycache__
+
