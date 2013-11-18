@@ -52,7 +52,7 @@ rate_render = 30
 rate_update = 100
 velocity_samples = 5
 
-currentmap = "cp_gorge"
+#currentmap = "cp_gorge"
 
 # color, min length (arc), max length (arc), distance
 style_objective = ((0.4, 0.4, 0.9, 1), 10, 90, 2000)
@@ -130,14 +130,14 @@ class OSD(backend):
 		qp.end()
 		
 	def render(self, qp): # http://pyqt.sourceforge.net/Docs/PyQt4/qpainter.html
-		qp.setFont(QFont("monospaced", 10))
-		try:
-			qp.drawText(100, 100, "vel: %.2f" % cb.average())
-			qp.drawText(100, 200, "fps: %.2f" % self.fps)
-			qp.drawText(100, 300, time.strftime("%H:%M:%S"))
-			qp.drawText(1800, 40, "%.2f %.2f %.2f" % (self.pitch, self.yaw, self.roll))
-		except AttributeError: pass
-		except NameError: pass
+		#qp.setFont(QFont("monospaced", 10))
+		#try:
+			#qp.drawText(100, 100, "vel: %.2f" % cb.average())
+			#qp.drawText(100, 200, "fps: %.2f" % self.fps)
+			#qp.drawText(100, 300, time.strftime("%H:%M:%S"))
+			#qp.drawText(1800, 40, "%.2f %.2f %.2f" % (self.pitch, self.yaw, self.roll))
+		#except AttributeError: pass
+		#except NameError: pass
 	
 		try:
 			front = V(*l.get_camera_front())
@@ -159,18 +159,22 @@ class OSD(backend):
 			
 			pp = self.lastpos / METERS_PER_INCH
 			
-			for style in locations[currentmap]:
-				qp.setPen(QPen(QColor.fromRgbF(*style[0]), 10))
-				for entry in locations[currentmap][style]:
-					location = V(*entry[0])
-					d = location - pp
-					len = d.magnitude()
-					if len == 0:
-						continue
-					# 1 = min, 2 = max, 3 = distance
-					#s = min(max((style[3]/len), 1) * style[1], style[2]) # hyperbolic
-					s = max((style[3] - min(style[3], len)) / style[3] * style[2], style[1]) # linear
-					point(qp, self.size(), 30, 1, math.atan2(-d[1], d[0])/pi*180 + self.yaw - 90, s);
+			try:
+				map = locations.get(currentmap)
+				if map:
+					for style in map:
+						qp.setPen(QPen(QColor.fromRgbF(*style[0]), 10))
+						for entry in locations[currentmap][style]:
+							location = V(*entry[0])
+							d = location - pp
+							len = d.magnitude()
+							if len == 0:
+								continue
+							# 1 = min, 2 = max, 3 = distance
+							#s = min(max((style[3]/len), 1) * style[1], style[2]) # hyperbolic
+							s = max((style[3] - min(style[3], len)) / style[3] * style[2], style[1]) # linear
+							point(qp, self.size(), 30, 1, math.atan2(-d[1], d[0])/pi*180 + self.yaw - 90, s);
+			except NameError: pass
 		except AttributeError: pass
 		
 		qp.setPen(QPen(QColor.fromRgbF(.9, .9, .9, .75), 3))
