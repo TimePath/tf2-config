@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import math
 
 class Vector3D:
@@ -26,6 +27,9 @@ class Vector3D:
 	
 	def __str__(self):
 		return str(self.c)
+	
+	def __repr__(self):
+		return repr(self.c)
 	
 	def magnitude(self):
 		return math.sqrt(sum(self[i]**2 for i in range(len(self))))
