@@ -11,6 +11,10 @@ Calculate [here](http://www.rjdown.co.uk/projects/bfbc2/fovcalculator.php)
     $ git submodule init
     $ git submodule update
 
+#Launch options
+
+    -novid -console -sw -noborder -w 1920 -h 1036 -x 0 -y 0 -g15
+
 #Script style
 
 ##Symbol table
