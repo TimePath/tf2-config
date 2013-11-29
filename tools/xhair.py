@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-import overlay
+from overlay.overlay import OSD
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import time
 
 rings = False
 
-class Xhair(overlay.OSD):
+class Xhair(OSD):
 	
 	def render(self, qp):
 		t = (time.time() - self.start) % (10 * 360)

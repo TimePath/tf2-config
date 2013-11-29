@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
-import overlay
-from point import Vector3D as V
+
+from mumble.point import Vector3D as V
+from overlay.overlay import OSD
+
 from PyQt4.QtGui import *
 
 from collections import deque
@@ -69,7 +71,7 @@ class CircularBuffer(deque):
 def unpack(p):
 	return V(p[0], p[2], p[1])
 
-class AR(overlay.OSD):
+class AR(OSD):
 	def logic(self):
 		try: ln
 		except NameError: return # no link
@@ -146,6 +148,8 @@ class AR(overlay.OSD):
 		except AttributeError: pass	# 'lastpos' is undefined
 
 if __name__ == "__main__":
+	import sys
+	sys.path.append("mumble_link")
 	import mumble_link as ln # python2 only
 	if ln.open():
 		cb = CircularBuffer()

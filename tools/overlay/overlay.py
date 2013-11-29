@@ -17,8 +17,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtOpenGL import *
 
-from point import Vector3D as V
-
 import PyQt4.pyqtconfig
 print("Running on PyQt version " + PyQt4.pyqtconfig.Configuration().pyqt_version_str)
 
@@ -53,8 +51,9 @@ class OSD(backend):
 			extendedStyleSettings = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
 			win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, extendedStyleSettings | win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT)
 		elif sys.platform.startswith("linux"): # http://pastebin.com/nCs93R1L
+			import os
 			from ctypes import cdll
-			cdll.LoadLibrary("./passthrough.so").allow_input_passthrough(hwnd)
+			cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "passthrough.so")).allow_input_passthrough(hwnd)
 		
 		try: self.setGeometry(*geometry); self.show()
 		except NameError: self.showFullScreen()

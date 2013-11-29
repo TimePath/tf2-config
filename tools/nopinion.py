@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import console, re
+from console.console import Console
+import re
 
 if __name__ == "__main__":
-	c = console.Console()
+	c = Console()
 	last_address = None
 	while True:
 		contents = c.read()
