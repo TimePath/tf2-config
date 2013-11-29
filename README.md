@@ -4,7 +4,7 @@ My TF2 config
 
 The aspect ratio for fov maximum gain is 1.85:1
 
-Calculate [here](http://www.rjdown.co.uk/projects/bfbc2/fovcalculator.php)
+Calculate [here](http://www.casualhacks.net/Source-FOV-calculator.html)
 
 #Fetching dependencies
 
