@@ -1,4 +1,4 @@
-[submodule "tools/overlay/mumble_link"]
+[submodule "tools/mumble_link"]
 	path = tools/mumble_link
 	url = https://github.com/dD0T/mumble_link.git
 [submodule "cfg/chris"]
