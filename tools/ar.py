@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from mumble.point import Vector3D as V
 from overlay.overlay import OSD
@@ -150,7 +150,7 @@ class AR(OSD):
 if __name__ == "__main__":
 	import sys
 	sys.path.append("mumble_link")
-	import mumble_link as ln # python2 only
+	import mumble_link as ln
 	if ln.open():
 		cb = CircularBuffer()
 	AR().start()

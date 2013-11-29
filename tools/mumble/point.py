@@ -16,8 +16,14 @@ class Vector3D:
 	def __mul__(self, s):
 		return Vector3D(*tuple([self[i]*s for i in range(len(self))]))
 	
-	def __div__(self, s):
+	def __div__(self, s): # python2
 		return Vector3D(*tuple([self[i]/s for i in range(len(self))]))
+	
+	def __truediv__(self, s): # python3
+		return Vector3D(*tuple([self[i]/s for i in range(len(self))]))
+	
+	def __floordiv__(self, s): # python3
+		return Vector3D(*tuple([self[i]//s for i in range(len(self))]))
 	
 	def __len__(self):
 		return len(self.c)
