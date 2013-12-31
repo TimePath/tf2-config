@@ -10,7 +10,7 @@ if __name__ == "__main__":
 		ip = re.findall(r"(?<=Connected to )[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}", contents)
 		if ip:
 			address = ip.pop()
-			print(address)
 			if not address == last_address:
+				print("Connecting to " + address)
 				last_address = address
 				c.send("connect %s matchmaking" % address)

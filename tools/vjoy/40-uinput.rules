@@ -1,5 +1,6 @@
-# Place in /etc/udev/rules.d/
+# Place in /lib/udev/rules.d/
 # sudo groupadd -f uinput
 # sudo gpasswd -a $USER uinput
+# sudo chmod 660 /dev/uinput
 KERNEL=="uinput", GROUP="uinput", MODE:="0660"
 SUBSYSTEM=="input", GROUP="uinput", MODE:="0660"
